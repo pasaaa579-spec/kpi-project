@@ -20,41 +20,86 @@ namespace InfiniteCaptcha.Api.Services
             switch (category)
             {
                 case 1:
-                    int a = _random.Next(1, 10 + level * 2);
-                    int b = _random.Next(1, 10 + level * 2);
-                    if (_random.NextDouble() > 0.5)
+                    if (level < 5)
                     {
-                        question = $"{a} + {b} = ?";
-                        correctAnswer = (a + b).ToString();
+                        int a = _random.Next(1, 10 + level * 4);
+                        int b = _random.Next(1, 10 + level * 4);
+                        if (_random.NextDouble() > 0.5)
+                        {
+                            question = $"{a} + {b} = ?";
+                            correctAnswer = (a + b).ToString();
+                        }
+                        else
+                        {
+                            int max = Math.Max(a, b);
+                            int min = Math.Min(a, b);
+                            question = $"{max} - {min} = ?";
+                            correctAnswer = (max - min).ToString();
+                        }
+                    }
+                    else if (level < 12)
+                    {
+                        int a = _random.Next(2, 10 + (level - 5));
+                        int b = _random.Next(2, 12);
+                        question = $"{a} * {b} = ?";
+                        correctAnswer = (a * b).ToString();
                     }
                     else
                     {
-                        int max = Math.Max(a, b);
-                        int min = Math.Min(a, b);
-                        question = $"{max} - {min} = ?";
-                        correctAnswer = (max - min).ToString();
+                        int a = _random.Next(10, 50 + level);
+                        int b = _random.Next(10, 50 + level);
+                        int c = _random.Next(5, 20 + level);
+                        question = $"{a} + {b} - {c} = ?";
+                        correctAnswer = (a + b - c).ToString();
                     }
                     break;
 
                 case 2:
-                    string[,] itQuestions = {
+                    string[,] easyIt = {
                         { "HTTP статус 'Not Found'?", "404" },
-                        { "HTTP статус 'OK'?", "200" },
                         { "Скільки біт в 1 байті?", "8" },
-                        { "Стандартний порт HTTP?", "80" },
+                        { "Стандартний порт HTTP?", "80" }
+                    };
+                    string[,] medIt = {
+                        { "HTTP статус 'OK'?", "200" },
                         { "Стандартний порт HTTPS?", "443" },
                         { "2 в 10 ступені?", "1024" },
                         { "Головна парадигма C# (три літери)?", "oop" },
                         { "Який фреймворк ми юзаємо для БД (.NET)?", "ef" }
                     };
-                    int qIndex = _random.Next(itQuestions.GetLength(0));
-                    question = itQuestions[qIndex, 0];
-                    correctAnswer = itQuestions[qIndex, 1];
+                    string[,] hardIt = {
+                        { "Який тип даних в C# використовують для точних фінансових розрахунків?", "decimal" },
+                        { "Структура даних, що працює за принципом LIFO (5 літер)?", "stack" },
+                        { "Базовий клас для всіх типів у .NET (6 літер)?", "object" },
+                        { "Який оператор LINQ використовують для фільтрації?", "where" },
+                        { "HTTP метод для повного оновлення ресурсу (3 літери)?", "put" }
+                    };
+
+                    string[,] selectedIt = level switch
+                    {
+                        < 6 => easyIt,
+                        < 13 => medIt,
+                        _ => hardIt
+                    };
+
+                    int qIndex = _random.Next(selectedIt.GetLength(0));
+                    question = selectedIt[qIndex, 0];
+                    correctAnswer = selectedIt[qIndex, 1];
                     break;
 
                 case 3:
-                    string[] words = { "kpi", "fpm", "code", "bug", "hash", "git", "null", "push" };
-                    string word = words[_random.Next(words.Length)];
+                    string[] easyWords = { "kpi", "bug", "git", "api", "url" };
+                    string[] medWords = { "code", "fpm", "hash", "null", "push", "stack", "class" };
+                    string[] hardWords = { "framework", "asynchronous", "polymorphism", "encapsulation", "interface" };
+
+                    string[] selectedWords = level switch
+                    {
+                        < 6 => easyWords,
+                        < 14 => medWords,
+                        _ => hardWords
+                    };
+
+                    string word = selectedWords[_random.Next(selectedWords.Length)];
                     question = $"Напиши задом наперед: {word}";
 
                     char[] charArray = word.ToCharArray();
@@ -63,22 +108,29 @@ namespace InfiniteCaptcha.Api.Services
                     break;
 
                 case 4:
-                    int dec = _random.Next(5, 20 + level);
+                    int dec = _random.Next(6 + level, 15 + level * 4);
                     if (_random.NextDouble() > 0.5)
                     {
                         question = $"Переведи з BIN (двійкової) у DEC: {Convert.ToString(dec, 2)}";
-                        correctAnswer = dec.ToString();
                     }
                     else
                     {
                         question = $"Переведи з HEX (шістнадцяткової) у DEC: {Convert.ToString(dec, 16).ToUpper()}";
-                        correctAnswer = dec.ToString();
                     }
+                    correctAnswer = dec.ToString();
                     break;
 
                 case 5:
-                    int m11 = _random.Next(1, 5), m12 = _random.Next(1, 5);
-                    int m21 = _random.Next(1, 5), m22 = _random.Next(1, 5);
+                    int maxMatrixVal = Math.Min(15, 4 + level / 2);
+                    int m11 = _random.Next(1, maxMatrixVal), m12 = _random.Next(1, maxMatrixVal);
+                    int m21 = _random.Next(1, maxMatrixVal), m22 = _random.Next(1, maxMatrixVal);
+
+                    if (level > 12)
+                    {
+                        if (_random.NextDouble() > 0.5) m12 = -_random.Next(1, 6);
+                        if (_random.NextDouble() > 0.5) m21 = -_random.Next(1, 6);
+                    }
+
                     if (_random.NextDouble() > 0.5)
                     {
                         question = $"Слід матриці (Trace) [[{m11}, {m12}], [{m21}, {m22}]] = ?";
@@ -92,18 +144,37 @@ namespace InfiniteCaptcha.Api.Services
                     break;
 
                 case 6:
-                    int coef = _random.Next(2, 6);
-                    int power = _random.Next(2, 5);
+                    int coef = _random.Next(2, 5 + level / 4);
+                    int power = _random.Next(2, 4 + level / 6);
+
                     if (_random.NextDouble() > 0.5)
                     {
-                        question = $"f'(1) для f(x) = {coef}x^{power} ?";
-                        correctAnswer = (coef * power).ToString();
+                        if (level > 14)
+                        {
+                            int linear = _random.Next(2, 10);
+                            question = $"f'(1) для f(x) = {coef}x^{power} + {linear}x ?";
+                            correctAnswer = (coef * power + linear).ToString();
+                        }
+                        else
+                        {
+                            question = $"f'(1) для f(x) = {coef}x^{power} ?";
+                            correctAnswer = (coef * power).ToString();
+                        }
                     }
                     else
                     {
-                        int evenCoef = _random.Next(1, 5) * 2;
-                        question = $"Визначений інтеграл від 0 до 1 для f(x) = {evenCoef}x dx ?";
-                        correctAnswer = (evenCoef / 2).ToString();
+                        if (level < 16)
+                        {
+                            int evenCoef = _random.Next(1, 4 + level / 4) * 2;
+                            question = $"Визначений інтеграл від 0 до 1 для f(x) = {evenCoef}x dx ?";
+                            correctAnswer = (evenCoef / 2).ToString();
+                        }
+                        else
+                        {
+                            int tripleCoef = _random.Next(1, 5) * 3;
+                            question = $"Визначений інтеграл від 0 до 1 для f(x) = {tripleCoef}x^2 dx ?";
+                            correctAnswer = (tripleCoef / 3).ToString();
+                        }
                     }
                     break;
 
