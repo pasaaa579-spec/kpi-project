@@ -7,20 +7,48 @@
 <PageTitle>Нескінченна Капча</PageTitle>
 
 <style>
+    .fade-in {
+        animation: fadeIn 0.6s ease-out;
+    }
 
-    .fade-in { animation: fadeIn 0.6s ease-out; }
-    .shake { animation: shake 0.5s cubic-bezier(.36,.07,.19,.97) both; }
-    
+    .shake {
+        animation: shake 0.5s cubic-bezier(.36, .07, .19, .97) both;
+    }
+
     @@keyframes fadeIn {
-        from { opacity: 0; transform: translateY(20px); }
-        to { opacity: 1; transform: translateY(0); }
+        from {
+            opacity: 0;
+            transform: translateY(20px);
+        }
+
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
     }
 
     @@keyframes shake {
-        10%, 90% { transform: translate3d(-1px, 0, 0); }
-        20%, 80% { transform: translate3d(2px, 0, 0); }
-        30%, 50%, 70% { transform: translate3d(-4px, 0, 0); }
-        40%, 60% { transform: translate3d(4px, 0, 0); }
+
+        10%,
+        90% {
+            transform: translate3d(-1px, 0, 0);
+        }
+
+        20%,
+        80% {
+            transform: translate3d(2px, 0, 0);
+        }
+
+        30%,
+        50%,
+        70% {
+            transform: translate3d(-4px, 0, 0);
+        }
+
+        40%,
+        60% {
+            transform: translate3d(4px, 0, 0);
+        }
     }
 
     .timer-badge {
@@ -32,7 +60,7 @@
 <div class="container text-center mt-5">
     <div class="row justify-content-center">
         <div class="col-md-6">
-            
+
             @if (isGameOver)
             {
                 <div class="card shadow-lg border-danger fade-in">
@@ -43,7 +71,7 @@
                         <h1 class="display-1 mb-3">☠️</h1>
                         <h3 class="text-danger mb-4">@errorMessage</h3>
                         <h4 class="mb-4">Ваш рекорд: <span class="badge bg-dark fs-4">@(currentLevel - 1)</span></h4>
-                        
+
                         <button class="btn btn-danger btn-lg w-100 mb-3" @onclick="StartGame">СПРОБУВАТИ ЩЕ РАЗ</button>
                         <a href="/leaderboard" class="btn btn-outline-dark w-100">ТАБЛИЦЯ ЛІДЕРІВ</a>
                     </div>
@@ -58,11 +86,11 @@
 
                     <div class="form-group mb-4 mt-4 text-start">
                         <label class="fw-bold mb-2">Ваш нікнейм:</label>
-                        <input @bind="playerName" class="form-control form-control-lg"
-                               placeholder="Введіть ім'я..." />
+                        <input @bind="playerName" class="form-control form-control-lg" placeholder="Введіть ім'я..." />
                     </div>
-                    
-                    <button class="btn btn-primary btn-lg w-100" @onclick="StartGame" disabled="@string.IsNullOrWhiteSpace(playerName)">
+
+                    <button class="btn btn-primary btn-lg w-100" @onclick="StartGame"
+                            disabled="@string.IsNullOrWhiteSpace(playerName)">
                         ПОЧАТИ ГРУ
                     </button>
                 </div>
@@ -78,19 +106,30 @@
                         </span>
                     </div>
                     <div class="card-body p-5">
+
+                        <div class="mb-3 text-center">
+                            <span class="badge bg-danger fs-6">Складність: @challenge.DifficultyLevel</span>
+                        </div>
                         <h2 class="mb-4" style="letter-spacing: 3px; font-family: 'Courier New', Courier, monospace;">
                             @challenge.QuestionText
                         </h2>
-                        
+
                         <div class="input-group mb-3">
                             <input @bind="userAnswer" @bind:event="oninput" @onkeyup="HandleKeyUp"
-                                   class="form-control form-control-lg text-center" 
-                                   placeholder="Відповідь тут..." autofocus />
+                                   class="form-control form-control-lg text-center" placeholder="Відповідь тут..." autofocus />
                         </div>
-                        
+
                         <button class="btn btn-success btn-lg w-100" @onclick="() => CheckAnswer(false)"
                                 disabled="@(string.IsNullOrEmpty(userAnswer) || isChecking)">
-                            @if (isChecking) { <span>Перевірка...</span> } else { <span>ПІДТВЕРДИТИ</span> }
+                            @if (isChecking)
+                            {
+                                <span>Перевірка...</span>
+                            }
+                            else
+                            {
+
+                                <span>ПІДТВЕРДИТИ</span>
+                            }
                         </button>
                     </div>
                 </div>
@@ -135,8 +174,8 @@
         {
             challenge = await Http.GetFromJsonAsync<CaptchaChallengeDto>($"api/captcha/generate/{level}");
             userAnswer = "";
-            animationClass = "fade-in"; 
-            
+            animationClass = "fade-in";
+
             StartTimer();
             StateHasChanged();
         }
@@ -153,7 +192,7 @@
         timerCts?.Cancel();
         timerCts = new CancellationTokenSource();
         timeLeft = 30;
-        
+
         _ = TimerLoop(timerCts.Token);
     }
 
@@ -180,7 +219,7 @@
         if (challenge == null || isChecking) return;
 
         isChecking = true;
-        timerCts?.Cancel(); 
+        timerCts?.Cancel();
 
         var attempt = new CaptchaAttemptDto
         {
@@ -205,8 +244,8 @@
             {
                 isGameOver = true;
                 successMessage = "";
-                errorMessage = isTimeout 
-                    ? "⏳ Час вийшов!" 
+                errorMessage = isTimeout
+                    ? "⏳ Час вийшов!"
                     : "❌ Не вірно!";
                 challenge = null;
             }
